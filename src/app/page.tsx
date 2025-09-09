@@ -1,4 +1,12 @@
+"use client"
+import { useState, useEffect } from "react"
+
 export default function Home() {
+	const [dark, setDark] = useState(false)
+	useEffect(() => {
+		if (dark) document.documentElement.classList.add("dark")
+		else document.documentElement.classList.remove("dark")
+	}, [dark])
 	const links = [
 		{
 			key: "linkedin",
@@ -21,11 +29,13 @@ export default function Home() {
 			label: "Setlist App",
 			url: "https://set-list-next.vercel.app/",
 		},
+		{
+			key: "rowdy",
+			label: "Rowdy Band Houston",
+			url: "https://rowdy-website.vercel.app/",
+		},
 	]
-	const comingSoon = [
-		{ key: "nfl", label: "NFL Box Score Redux" },
-		{ key: "rowdy", label: "Rowdy Band Houston Website" },
-	]
+	const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
 
 	const Icon = ({ name }: { name: string }) => {
 		switch (name) {
@@ -94,7 +104,7 @@ export default function Home() {
 					>
 						<path
 							fill="currentColor"
-							d="M6 3v2h12V3h2v18h-2v-2H6v2H4V3h2zm0 4v8h12V7H6zm2 2h8v4H8V9z"
+							d="M9 3v12.26A3.99 3.99 0 007 15c-1.657 0-3 1.343-3 3s1.343 3 3 3a3.99 3.99 0 003.8-2.74L11 18V8h7v5.26A3.99 3.99 0 0016 13c-1.657 0-3 1.343-3 3s1.343 3 3 3a3.99 3.99 0 003.8-2.74L21 16V3H9z"
 						/>
 					</svg>
 				)
@@ -130,14 +140,21 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-slate-100 text-slate-900 px-4">
-			<div className="w-full max-w-md flex flex-col items-center gap-10">
-				<header className="text-center px-2">
+		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 dark:text-slate-200 px-4 transition-colors">
+			<div className="w-full max-w-md flex flex-col items-center gap-10 relative">
+				<button
+					onClick={() => setDark((d) => !d)}
+					aria-pressed={dark}
+					className="absolute top-0 right-0 mt-2 mr-1 text-xs px-3 py-1 rounded-full border border-slate-400/50 dark:border-slate-600/60 bg-white/70 dark:bg-slate-700/60 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-colors"
+				>
+					{dark ? "Light Mode" : "Dark Mode"}
+				</button>
+				<header className="text-center px-2 pt-6">
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-sm">
 						Ben Gilsenberg
 					</h1>
-					<p className="text-base md:text-lg text-slate-600 leading-relaxed max-w-sm mx-auto">
-						Developer • Builder • Music & Language Projects
+					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc dark:text-slate-400">
+						Developer * Team Leader * Musician
 					</p>
 				</header>
 				<section className="w-full flex flex-col gap-4">
