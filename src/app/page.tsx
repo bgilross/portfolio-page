@@ -13,26 +13,26 @@ export default function Home() {
 			label: "LinkedIn",
 			url: "https://www.linkedin.com/in/ben-gilsenberg-1856a7301/",
 		},
-		{
-			key: "instagram",
-			label: "Instagram",
-			url: "https://www.instagram.com/ben_ramblin/",
-		},
 		{ key: "github", label: "GitHub", url: "https://github.com/bgilross" },
 		{
-			key: "spanish",
-			label: "Spanish App",
-			url: "https://spanish-phi.vercel.app/",
+			key: "setlist",
+			label: "Setlist Creator",
+			url: "https://set-list-next.vercel.app/",
 		},
 		{
-			key: "setlist",
-			label: "Setlist App",
-			url: "https://set-list-next.vercel.app/",
+			key: "spanish",
+			label: "Spanish Learning",
+			url: "https://spanish-phi.vercel.app/",
 		},
 		{
 			key: "rowdy",
 			label: "Rowdy Band Houston",
 			url: "https://rowdy-website.vercel.app/",
+		},
+		{
+			key: "instagram",
+			label: "Instagram",
+			url: "https://www.instagram.com/ben_ramblin/",
 		},
 	]
 	const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
