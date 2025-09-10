@@ -20,9 +20,6 @@ body {
 .app-bg {
 	background: linear-gradient(120deg, #d0d7de, #bcc5ce 55%, #aeb8c2);
 }
-.dark .app-bg {
-	background: linear-gradient(140deg, #0b1220, #162235 55%, #27384a);
-}
 
 /* Elongated vertical link buttons */
 .link-btn {
@@ -44,14 +41,6 @@ body {
 		0 8px 24px -10px rgba(30, 41, 59, 0.12);
 	transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
 	position: relative;
-}
-.dark .link-btn {
-	background: linear-gradient(135deg, #1c2532 0%, #121b25 100%);
-	color: #cdd5df;
-	border-color: rgba(255, 255, 255, 0.08);
-}
-.dark .link-btn:hover {
-	background: linear-gradient(135deg, #253242 0%, #162432 100%);
 }
 .link-btn:hover {
 	background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -85,80 +74,50 @@ body {
 	opacity: 0.85;
 }
 .link-btn:hover .icon {
-	opacity: 1;
+	transform: translateX(4px);
+	opacity: 0.9;
 }
 
-/* Improve overall text contrast */
-h1,
-h2,
-h3,
-h4,
-h5 {
+/* When a link button is hovered, tweak contained typographic colors */
+.link-btn:hover h1,
+.link-btn:hover h2,
+.link-btn:hover h3,
+.link-btn:hover h4,
+.link-btn:hover h5 {
 	color: #0d1b2a;
 }
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5 {
-	color: #e2e8f0;
-}
-p {
+.link-btn:hover p,
+.link-btn:hover footer,
+.link-btn:hover .outer-desc {
 	color: #5b6775;
 }
-.dark p {
-	color: #94a3b8;
+
+/* Modifier: dark variant for prominent buttons */
+.link-btn.dark-btn {
+	background: #0f172a; /* slate-900 */
+	color: #ffffff;
+	border-color: transparent;
 }
-footer {
-	color: #5b6775;
+.link-btn.dark-btn .icon,
+.link-btn.dark-btn .arrow,
+.link-btn.dark-btn .label {
+	color: #ffffff;
 }
-.outer-desc {
-	color: #5b6775;
+.link-btn.dark-btn:hover {
+	background: #0b1220; /* slightly darker on hover */
 }
-.dark .outer-desc {
-	color: #9aa8b6;
+
+/* Shrink modifier: make button size to content (useful for single CTA) */
+.link-btn.shrink {
+	width: auto;
+	grid-template-columns: 18px 1fr 14px; /* smaller icon and arrow spacing */
+	padding: 0.6rem 1rem;
+	justify-self: center;
+}
+.link-btn.shrink .label {
+	text-align: center;
 }
 
 /* (Removed noise styles) */
 
-@media (prefers-color-scheme: dark) {
-	.link-btn {
-		background: linear-gradient(135deg, #1c2532 0%, #121b25 100%);
-		color: #cdd5df;
-		border-color: rgba(255, 255, 255, 0.08);
-	}
-	.link-btn:hover {
-		background: linear-gradient(135deg, #253242 0%, #162432 100%);
-	}
-	.link-btn .arrow {
-		opacity: 0.35;
-	}
-	.link-btn:hover .arrow {
-		opacity: 0.65;
-	}
-	.link-btn .icon {
-		opacity: 0.7;
-	}
-	.link-btn:hover .icon {
-		opacity: 0.95;
-	}
-	.link-btn.is-disabled {
-		opacity: 0.32;
-	}
-	body {
-		color: #d1d5db;
-	}
-	h1,
-	h2,
-	h3,
-	h4,
-	h5 {
-		color: #e2e8f0;
-	}
-	p {
-		color: #94a3b8;
-	}
-	footer {
-		color: #8091a3;
-	}
-}
+/* removed dark-mode prefers-color-scheme overrides; single light style maintained */

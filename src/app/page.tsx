@@ -1,13 +1,10 @@
 "use client"
-import { useState, useEffect } from "react"
+
+import Image from "next/image"
+import { useState } from "react"
 
 export default function Home() {
-	const [dark, setDark] = useState(false)
-	useEffect(() => {
-		if (dark) document.documentElement.classList.add("dark")
-		else document.documentElement.classList.remove("dark")
-	}, [dark])
-	const links = [
+	const personal = [
 		{
 			key: "linkedin",
 			label: "LinkedIn",
@@ -15,31 +12,45 @@ export default function Home() {
 		},
 		{ key: "github", label: "GitHub", url: "https://github.com/bgilross" },
 		{
-			key: "setlist",
-			label: "Setlist Creator",
-			url: "https://set-list-next.vercel.app/",
-		},
-		{
-			key: "spanish",
-			label: "Spanish Learning",
-			url: "https://spanish-phi.vercel.app/",
-		},
-		{
-			key: "rowdy",
-			label: "Rowdy Band Houston",
-			url: "https://rowdy-website.vercel.app/",
-		},
-		{
-			key: "nfl",
-			label: "NFL Box Score Redux",
-			url: "https://nfl-next-app-beige.vercel.app/",
-		},
-		{
 			key: "instagram",
 			label: "Instagram",
 			url: "https://www.instagram.com/ben_ramblin/",
 		},
 	]
+
+	const projects = [
+		{
+			key: "setlist",
+			label: "Setlist Creator",
+			url: "https://set-list-next.vercel.app/",
+			preview: "/preview img/setlister-preview.png",
+		},
+		{
+			key: "spanish",
+			label: "Spanish Learning",
+			url: "https://spanish-phi.vercel.app/",
+			preview: "/preview img/spanish-preview.png",
+		},
+		{
+			key: "rowdy",
+			label: "Rowdy Band Houston",
+			url: "https://rowdy-website.vercel.app/",
+			preview: "/preview img/rowdy-preview.png",
+		},
+		{
+			key: "nfl",
+			label: "NFL Box Score Redux",
+			url: "https://nfl-next-app-beige.vercel.app/",
+			preview: "/preview img/nfl-preview.png",
+		},
+	]
+
+	const [previewSrc, setPreviewSrc] = useState<string | null>(null)
+	const [previewPos, setPreviewPos] = useState<{
+		top: number
+		left: number
+		width: number
+	} | null>(null)
 	// const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
 
 	const Icon = ({ name }: { name: string }) => {
@@ -145,25 +156,21 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 dark:text-slate-200 px-4 transition-colors">
-			<div className="w-full max-w-md flex flex-col items-center gap-10 relative">
-				<button
-					onClick={() => setDark((d) => !d)}
-					aria-pressed={dark}
-					className="absolute top-0 right-0 mt-2 mr-1 text-xs px-3 py-1 rounded-full border border-slate-400/50 dark:border-slate-600/60 bg-white/70 dark:bg-slate-700/60 backdrop-blur-sm hover:bg-white dark:hover:bg-slate-700 shadow-sm transition-colors"
-				>
-					{dark ? "Light Mode" : "Dark Mode"}
-				</button>
+		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4 transition-colors">
+			<div className="w-full max-w-md flex flex-col items-center gap-6 relative">
 				<header className="text-center px-2 pt-6">
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-sm">
 						Ben Gilsenberg
 					</h1>
-					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc dark:text-slate-400">
+					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc">
 						Developer * Team Leader * Musician
 					</p>
 				</header>
+				{/* Top View All Projects removed; moved to bottom */}
+
+				{/* Personal links */}
 				<section className="w-full flex flex-col gap-4">
-					{links.map((link) => (
+					{personal.map((link) => (
 						<a
 							key={link.key}
 							href={link.url}
@@ -181,19 +188,112 @@ export default function Home() {
 							</span>
 						</a>
 					))}
-					{/* {comingSoon.map((cs) => (
-						<span
-							key={cs.key}
-							className="link-btn is-disabled"
-						>
-							<Icon name={cs.key} />
-							<span className="label">{cs.label}</span>
-							<span className="soon text-[10px] tracking-wide uppercase">
-								Soon
-							</span>
-						</span>
-					))} */}
 				</section>
+
+				<div className="w-full max-w-md px-2 py-0 flex justify-center -mt-2 -mb-1">
+					<h2 className="text-sm text-slate-700 uppercase tracking-wider text-center">
+						Projects
+					</h2>
+				</div>
+
+				{/* Projects with hover preview area (desktop). Links column keeps its width; preview is absolutely positioned to the right */}
+				<div className="w-full relative -mt-1">
+					<div className="w-full max-w-md flex flex-col gap-4">
+						{projects.map((link) => (
+							<a
+								key={link.key}
+								href={link.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="link-btn group"
+								data-preview={link.preview || ""}
+								onMouseEnter={(e) => {
+									const rect = (
+										e.currentTarget as HTMLElement
+									).getBoundingClientRect()
+									// Position below the hovered link relative to the viewport and capture width
+									setPreviewPos({
+										top: rect.bottom + window.scrollY,
+										left: rect.left + window.scrollX,
+										width: rect.width,
+									})
+									setPreviewSrc(link.preview || null)
+								}}
+								onMouseLeave={() => {
+									setPreviewSrc(null)
+									setPreviewPos(null)
+								}}
+								onFocus={(e) => {
+									const rect = (
+										e.currentTarget as HTMLElement
+									).getBoundingClientRect()
+									setPreviewPos({
+										top: rect.bottom + window.scrollY,
+										left: rect.left + window.scrollX,
+										width: rect.width,
+									})
+									setPreviewSrc(link.preview || null)
+								}}
+								onBlur={() => {
+									setPreviewSrc(null)
+									setPreviewPos(null)
+								}}
+							>
+								<Icon name={link.key} />
+								<span className="label">{link.label}</span>
+								<span
+									className="arrow"
+									aria-hidden
+								>
+									→
+								</span>
+							</a>
+						))}
+					</div>
+
+					{/* Popup-style preview that appears under the hovered link */}
+					{previewSrc && previewPos && (
+						<div
+							className="hidden md:block fixed z-50"
+							style={{
+								top: previewPos.top + 8,
+								left: previewPos.left,
+								width: previewPos.width,
+							}}
+						>
+							<div className="bg-white rounded-lg shadow-lg overflow-hidden">
+								<div className="w-full h-56 bg-slate-100">
+									<Image
+										src={previewSrc}
+										alt="project preview"
+										width={previewPos.width}
+										height={Math.round(previewPos.width * 0.6)}
+										className="object-cover w-full h-full"
+									/>
+								</div>
+							</div>
+						</div>
+					)}
+				</div>
+				<div className="w-full max-w-md px-2">
+					<a
+						href="/projects"
+						className="link-btn dark-btn shrink mt-4"
+					>
+						<span
+							className="icon"
+							aria-hidden
+						/>
+						<span className="label text-center">View All Projects</span>
+						<span
+							className="arrow"
+							aria-hidden
+						>
+							→
+						</span>
+					</a>
+				</div>
+
 				<footer className="text-center text-xs text-slate-500 pt-2">
 					<span>More projects and updates coming soon.</span>
 				</footer>
