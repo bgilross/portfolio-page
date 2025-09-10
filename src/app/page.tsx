@@ -30,14 +30,14 @@ export default function Home() {
 			url: "https://rowdy-website.vercel.app/",
 		},
 		{
-			key: "instagram",
-			label: "Instagram",
-			url: "https://www.instagram.com/ben_ramblin/",
-		},
-		{
 			key: "nfl",
 			label: "NFL Box Score Redux",
 			url: "https://nfl-next-app-beige.vercel.app/",
+		},
+		{
+			key: "instagram",
+			label: "Instagram",
+			url: "https://www.instagram.com/ben_ramblin/",
 		},
 	]
 	// const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
