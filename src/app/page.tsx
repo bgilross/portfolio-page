@@ -34,8 +34,13 @@ export default function Home() {
 			label: "Instagram",
 			url: "https://www.instagram.com/ben_ramblin/",
 		},
+		{
+			key: "nfl",
+			label: "NFL Box Score Redux",
+			url: "https://nfl-next-app-beige.vercel.app/",
+		},
 	]
-	const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
+	// const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
 
 	const Icon = ({ name }: { name: string }) => {
 		switch (name) {
@@ -176,7 +181,7 @@ export default function Home() {
 							</span>
 						</a>
 					))}
-					{comingSoon.map((cs) => (
+					{/* {comingSoon.map((cs) => (
 						<span
 							key={cs.key}
 							className="link-btn is-disabled"
@@ -187,7 +192,7 @@ export default function Home() {
 								Soon
 							</span>
 						</span>
-					))}
+					))} */}
 				</section>
 				<footer className="text-center text-xs text-slate-500 pt-2">
 					<span>More projects and updates coming soon.</span>
