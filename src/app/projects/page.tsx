@@ -26,7 +26,8 @@ const projects = [
 	{
 		id: "rowdy",
 		title: "Rowdy Band Houston",
-		description: "Band website with events, media and booking for Rowdy (Houston).",
+		description:
+			"Band website with events, media and booking for Rowdy (Houston).",
 		url: "https://rowdy-website.vercel.app/",
 		preview: "/preview img/rowdy-preview.png",
 	},
