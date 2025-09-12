@@ -162,11 +162,11 @@ export default function Home() {
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-sm">
 						Ben Gilsenberg
 					</h1>
+					<p>Full Stack Developer</p>
 					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc">
-						Developer * Team Leader * Musician
+						Next.js | PosgreSQL | TailwindCSS | Redux
 					</p>
 				</header>
-				{/* Top View All Projects removed; moved to bottom */}
 
 				{/* Personal links */}
 				<section className="w-full flex flex-col gap-4">
