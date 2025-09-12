@@ -14,6 +14,14 @@ const projects = [
 			"Create and share band setlists with an easy editor and export.",
 		url: "https://set-list-next.vercel.app/",
 		preview: "/preview img/setlister-preview.png",
+		tech: [
+			"Next.js",
+			"React",
+			"TailwindCSS",
+			"Supabase",
+			"Context",
+			"FirebaseAUTH",
+		],
 	},
 	{
 		id: "spanish",
@@ -22,6 +30,7 @@ const projects = [
 			"An interactive app for practicing Spanish with spaced repetition.",
 		url: "https://spanish-phi.vercel.app/",
 		preview: "/preview img/spanish-preview.png",
+		tech: ["Next.js", "React", "Zustand", "TailwindCSS", "Prisma-PostgreSQL"],
 	},
 	{
 		id: "rowdy",
@@ -30,6 +39,7 @@ const projects = [
 			"Band website with events, media and booking for Rowdy (Houston).",
 		url: "https://rowdy-website.vercel.app/",
 		preview: "/preview img/rowdy-preview.png",
+		tech: ["React", "Vite", "TailwindCSS"],
 	},
 	{
 		id: "nfl",
@@ -37,6 +47,7 @@ const projects = [
 		description: "Stats-focused UI rebuilt with performance in mind.",
 		url: "https://nfl-next-app-beige.vercel.app/",
 		preview: "/preview img/nfl-preview.png",
+		tech: ["React", "Next.js", "Node.js", "NeonDB", "TailwindCSS"],
 	},
 ]
 
@@ -83,6 +94,18 @@ export default function ProjectsPage() {
 								<div className="p-6 bg-slate-900 text-white">
 									<h3 className="font-semibold text-2xl mb-2">{p.title}</h3>
 									<p className="text-base text-slate-200">{p.description}</p>
+									{p.tech && (
+										<div className="mt-4 flex flex-wrap gap-2">
+											{p.tech.map((t) => (
+												<span
+													key={t}
+													className="inline-block text-xs font-semibold px-3 py-1 rounded-full bg-white/6 backdrop-blur-sm text-white border border-white/10"
+												>
+													{t}
+												</span>
+											))}
+										</div>
+									)}
 								</div>
 							</a>
 						</article>
