@@ -1,7 +1,9 @@
 "use client"
 
 import Image from "next/image"
-import { useState } from "react"
+import React, { useState, useEffect, useRef } from "react"
+import projectsData from "./projects/data"
+import projectStyles from "./projects/projects.module.css"
 
 export default function Home() {
 	const personal = [
@@ -51,6 +53,22 @@ export default function Home() {
 		left: number
 		width: number
 	} | null>(null)
+	const [previewTech, setPreviewTech] = useState<string[] | null>(null)
+	const [techPos, setTechPos] = useState<{ top: number; left: number } | null>(
+		null
+	)
+	const [showTech, setShowTech] = useState(false)
+	const [showPreview, setShowPreview] = useState(false)
+	const hideTimeoutRef = useRef<number | null>(null)
+
+	useEffect(() => {
+		return () => {
+			if (hideTimeoutRef.current != null) {
+				window.clearTimeout(hideTimeoutRef.current)
+				hideTimeoutRef.current = null
+			}
+		}
+	}, [])
 	// const comingSoon = [{ key: "nfl", label: "NFL Box Score Redux" }]
 
 	const Icon = ({ name }: { name: string }) => {
@@ -214,35 +232,106 @@ export default function Home() {
 								className="link-btn group"
 								data-preview={link.preview || ""}
 								onMouseEnter={(e) => {
+									if (hideTimeoutRef.current != null) {
+										window.clearTimeout(hideTimeoutRef.current)
+										hideTimeoutRef.current = null
+									}
 									const rect = (
 										e.currentTarget as HTMLElement
 									).getBoundingClientRect()
-									// Position below the hovered link relative to the viewport and capture width
+									// Position the preview to the right of the hovered link and vertically center using translateY(-50%)
 									setPreviewPos({
-										top: rect.bottom + window.scrollY,
-										left: rect.left + window.scrollX,
+										top: rect.top + window.scrollY + rect.height / 2,
+										left: rect.right + window.scrollX + 12,
 										width: rect.width,
 									})
 									setPreviewSrc(link.preview || null)
+									// mount hidden then flip visible on next frame so CSS transition can run
+									setShowPreview(false)
+									requestAnimationFrame(() => {
+										void document.body.offsetHeight
+										setShowPreview(true)
+									})
+
+									// tech bubbles: position left centered on the link
+									setPreviewTech(
+										projectsData.find((p) => p.preview === link.preview)
+											?.tech || null
+									)
+									setTechPos({
+										top: rect.top + rect.height / 2 + window.scrollY,
+										left: rect.left + window.scrollX - 8,
+									})
+									// mount hidden then flip visible on next frame so CSS transition can run
+									setShowTech(false)
+									requestAnimationFrame(() => {
+										// force layout read so the browser treats the element as mounted before we switch to 'show'
+										void document.body.offsetHeight
+										setShowTech(true)
+									})
 								}}
 								onMouseLeave={() => {
-									setPreviewSrc(null)
-									setPreviewPos(null)
+									setShowPreview(false)
+									if (hideTimeoutRef.current != null)
+										window.clearTimeout(hideTimeoutRef.current)
+									hideTimeoutRef.current = window.setTimeout(() => {
+										setPreviewSrc(null)
+										setPreviewPos(null)
+										hideTimeoutRef.current = null
+										setShowTech(false)
+										setPreviewTech(null)
+										setTechPos(null)
+									}, 220)
 								}}
 								onFocus={(e) => {
+									if (hideTimeoutRef.current != null) {
+										window.clearTimeout(hideTimeoutRef.current)
+										hideTimeoutRef.current = null
+									}
 									const rect = (
 										e.currentTarget as HTMLElement
 									).getBoundingClientRect()
+									// center preview vertically using translateY on the container
 									setPreviewPos({
-										top: rect.bottom + window.scrollY,
-										left: rect.left + window.scrollX,
+										top: rect.top + window.scrollY + rect.height / 2,
+										left: rect.right + window.scrollX + 12,
 										width: rect.width,
 									})
 									setPreviewSrc(link.preview || null)
+									// mount hidden then flip visible on next frame so CSS transition can run
+									setShowPreview(false)
+									requestAnimationFrame(() => {
+										void document.body.offsetHeight
+										setShowPreview(true)
+									})
+
+									setPreviewTech(
+										projectsData.find((p) => p.preview === link.preview)
+											?.tech || null
+									)
+									setTechPos({
+										top: rect.top + rect.height / 2 + window.scrollY,
+										left: rect.left + window.scrollX - 8,
+									})
+									// mount hidden then flip visible on next frame so CSS transition can run
+									setShowTech(false)
+									requestAnimationFrame(() => {
+										void document.body.offsetHeight
+										setShowTech(true)
+									})
 								}}
 								onBlur={() => {
-									setPreviewSrc(null)
-									setPreviewPos(null)
+									setShowPreview(false)
+									if (hideTimeoutRef.current != null)
+										window.clearTimeout(hideTimeoutRef.current)
+									hideTimeoutRef.current = window.setTimeout(() => {
+										setPreviewSrc(null)
+										setPreviewPos(null)
+										hideTimeoutRef.current = null
+										setShowTech(false)
+										setPreviewTech(null)
+										setTechPos(null)
+									}, 220)
 								}}
 							>
 								<Icon name={link.key} />
@@ -260,23 +349,75 @@ export default function Home() {
 					{/* Popup-style preview that appears under the hovered link */}
 					{previewSrc && previewPos && (
 						<div
-							className="hidden md:block fixed z-50"
+							className="hidden md:block fixed z-50 pointer-events-none"
 							style={{
-								top: previewPos.top + 8,
+								top: previewPos.top,
 								left: previewPos.left,
 								width: previewPos.width,
+								transform: "translateY(-50%)",
 							}}
 						>
-							<div className="bg-white rounded-lg shadow-lg overflow-hidden">
-								<div className="w-full h-56 bg-slate-100">
-									<Image
-										src={previewSrc}
-										alt="project preview"
-										width={previewPos.width}
-										height={Math.round(previewPos.width * 0.6)}
-										className="object-cover w-full h-full"
-									/>
+							{/* Outer wrapper handles fade/scale transitions; pointer-events none so it doesn't steal hover */}
+							<div
+								className={`preview-popup ${
+									showPreview ? "preview-popup-visible" : "preview-popup-hidden"
+								} pointer-events-none`}
+							>
+								<div className="bg-white rounded-lg shadow-lg overflow-hidden">
+									<div className="w-full h-56 bg-slate-100">
+										<Image
+											src={previewSrc}
+											alt="project preview"
+											width={previewPos.width}
+											height={Math.round(previewPos.width * 0.6)}
+											className="object-cover w-full h-full"
+										/>
+									</div>
 								</div>
+							</div>
+						</div>
+					)}
+
+					{/* Vertical tech bubbles to the left of the hovered link */}
+					{previewTech && techPos && (
+						<div
+							className="hidden md:block fixed z-50 pointer-events-none"
+							style={{
+								top: techPos.top,
+								left: techPos.left,
+								transform: "translateX(-100%) translateY(-50%)",
+							}}
+						>
+							<div className={`tech-stack ${showTech ? "show" : ""} mr-3`}>
+								{(() => {
+									const count = previewTech.length
+									const center = Math.floor((count - 1) / 2)
+									// estimate pill height + gap (tailwind text-xs + padding) ~ 28px
+									const pillHeight = 28
+									return previewTech.map((t, i) => {
+										const offsetIndex = i - center
+										const finalY = offsetIndex * (pillHeight + 6)
+										const isCenter = i === center
+										const pillStyle = {
+											transformOrigin: "center",
+											transitionDelay: `${Math.abs(offsetIndex) * 40}ms`,
+										} as React.CSSProperties & Record<string, string>
+										pillStyle["--finalY"] = `${finalY}px`
+										return (
+											<span
+												key={t + i}
+												className={`${
+													projectStyles.techPill
+												} inline-block text-xs font-semibold text-white ${
+													isCenter ? "center" : ""
+												}`}
+												style={pillStyle}
+											>
+												{t}
+											</span>
+										)
+									})
+								})()}
 							</div>
 						</div>
 					)}
