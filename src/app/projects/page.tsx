@@ -49,6 +49,14 @@ const projects = [
 		preview: "/preview img/nfl-preview.png",
 		tech: ["React", "Next.js", "Node.js", "NeonDB", "TailwindCSS"],
 	},
+	{
+		id: "blackjack",
+		title: "Blackjack App",
+		description: "React Blackjack.",
+		url: "https://blackjack-eta-topaz.vercel.app/",
+		preview: "/preview img/blackjack-preview.png",
+		tech: ["React", "TailwindCSS"],
+	},
 ]
 
 export default function ProjectsPage() {
