@@ -159,16 +159,19 @@ export default function Home() {
 		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4 transition-colors">
 			<div className="w-full max-w-md flex flex-col items-center gap-6 relative">
 				<header className="text-center px-2 pt-6">
-					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-4 drop-shadow-sm">
+					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 drop-shadow-sm">
 						Ben Gilsenberg
 					</h1>
-					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc">
+
+					{/* Emphasized role with more weight and space from name + smaller, subdued tech lines */}
+					<p className="text-2xl md:text-3xl font-semibold text-slate-900/95 mb-4">
 						Full Stack Developer
 					</p>
-					<p className="text-base md:text-lg leading-relaxed max-w-sm mx-auto outer-desc">
-						React | Next.js | | TypeScript | PostgreSQL | Supabase | TailwindCSS
-						| Redux |
-					</p>
+
+					<div className="max-w-sm mx-auto space-y-1 text-sm md:text-base text-slate-700/90 leading-snug">
+						<p>React · Next.js · TypeScript · TailwindCSS</p>
+						<p>Redux · PostgreSQL · Supabase</p>
+					</div>
 				</header>
 
 				{/* Personal links */}
@@ -194,7 +197,7 @@ export default function Home() {
 				</section>
 
 				<div className="w-full max-w-md px-2 py-0 flex justify-center -mt-2 -mb-1">
-					<h2 className="text-sm text-slate-700 uppercase tracking-wider text-center">
+					<h2 className="text-md font-semibold text-slate-700 uppercase tracking-wider text-center">
 						Projects
 					</h2>
 				</div>
