@@ -47,7 +47,7 @@ export const projects = [
 		description: "React Blackjack.",
 		url: "https://blackjack-eta-topaz.vercel.app/",
 		preview: "/preview img/blackjack-preview.png",
-		tech: ["React", "TailwindCSS"],
+		tech: ["React", "Context", "TailwindCSS"],
 	},
 ]
 
