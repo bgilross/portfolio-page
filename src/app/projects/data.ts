@@ -45,7 +45,8 @@ export const projects = [
 	{
 		id: "blackjack",
 		title: "Blackjack App",
-		description: "React Blackjack.",
+		description:
+			"React built app to try a Blackjack game within the constraints of JS and CSS.",
 		url: "https://blackjack-eta-topaz.vercel.app/",
 		preview: "/preview img/blackjack-preview.png",
 		tech: ["React", "Context", "TailwindCSS"],
