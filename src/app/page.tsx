@@ -174,8 +174,8 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4 transition-colors">
-			<div className="w-full max-w-md flex flex-col items-center gap-6 relative">
+		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4">
+			<div className="w-full max-w-md flex flex-col items-center gap-6 relative home-projects">
 				<header className="text-center px-2 pt-6">
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 drop-shadow-sm">
 						Ben Gilsenberg
@@ -222,7 +222,7 @@ export default function Home() {
 
 				{/* Projects with hover preview area (desktop). Links column keeps its width; preview is absolutely positioned to the right */}
 				<div className="w-full relative -mt-1">
-					<div className="w-full max-w-md flex flex-col gap-4">
+					<div className="w-full max-w-md flex flex-col gap-4 home-projects">
 						{projects.map((link) => (
 							<a
 								key={link.key}

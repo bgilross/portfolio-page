@@ -12,6 +12,8 @@ export default function ProjectListClient() {
 	const clearTimeoutRef = useRef<number | null>(null)
 
 	useEffect(() => {
+		// snapshot RAF id for safe cleanup (prevents ref-change race in cleanup)
+		const rafIdSnapshot = rafRef.current
 		function onPointerMove(e: PointerEvent) {
 			lastPointer.current = { x: e.clientX, y: e.clientY }
 		}
@@ -86,7 +88,7 @@ export default function ProjectListClient() {
 			window.removeEventListener("scroll", onScroll)
 			window.removeEventListener("wheel", onScroll)
 			window.removeEventListener("wheel", onWheelImmediate)
-			if (rafRef.current != null) window.cancelAnimationFrame(rafRef.current)
+			if (rafIdSnapshot != null) window.cancelAnimationFrame(rafIdSnapshot)
 			if (clearTimeoutRef.current != null)
 				window.clearTimeout(clearTimeoutRef.current)
 		}
@@ -97,7 +99,7 @@ export default function ProjectListClient() {
 			{projects.map((p) => (
 				<article
 					key={p.id}
-					className={`${styles.projectCard} bg-white rounded-lg shadow-md overflow-hidden w-full transform transition-transform duration-200 ease-out hover:scale-105 hover:shadow-xl`}
+					className={`${styles.projectCard} bg-white rounded-lg shadow-md overflow-hidden w-full transform hover:scale-105 hover:shadow-xl`}
 				>
 					<a
 						href={p.url}

@@ -39,7 +39,7 @@ body {
 	line-height: 1.2;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
 		0 8px 24px -10px rgba(30, 41, 59, 0.12);
-	transition: background 0.25s, box-shadow 0.25s, transform 0.25s;
+	/* transitions removed per request: popup/positioning preserved, appear instantly */
 	position: relative;
 }
 .link-btn:hover {
@@ -61,7 +61,7 @@ body {
 .link-btn .arrow {
 	font-size: 1.15rem;
 	opacity: 0.55;
-	transition: transform 0.25s, opacity 0.25s;
+	/* transitions removed per request: appear instantly */
 	justify-self: end;
 }
 .link-btn:hover .arrow {
@@ -122,10 +122,8 @@ body {
 
 /* removed dark-mode prefers-color-scheme overrides; single light style maintained */
 
-/* Preview popup transition helper */
+/* Preview popup helper: transitions removed so previews pop into place instantly. */
 .preview-popup {
-	transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1),
-		opacity 200ms ease-out;
 	transform-origin: center left;
 	will-change: transform, opacity;
 	pointer-events: none; /* visual-only preview */
@@ -133,7 +131,6 @@ body {
 }
 .preview-popup-hidden {
 	opacity: 0;
-	/* start slightly left and small, then slide/scale into place */
 	transform: translateX(-18px) scale(0.88);
 }
 .preview-popup-visible {
@@ -156,9 +153,7 @@ body {
 	/* Start near the link center, slightly offset toward the link horizontally. */
 	transform: translateX(18px) translateY(0) scale(0.88);
 	opacity: 0;
-	/* allow per-pill stagger by setting inline transition-delay when rendering */
-	transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1),
-		opacity 180ms ease-out;
+	/* Transitions removed so pills appear instantly when `.show` is toggled. */
 }
 .tech-stack.show .techPill {
 	/* Move to final X (0) and to its final vertical offset set by --finalY */
