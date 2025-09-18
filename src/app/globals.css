@@ -126,21 +126,32 @@ body {
 .preview-popup {
 	transform-origin: center left;
 	will-change: transform, opacity;
-	pointer-events: none; /* visual-only preview */
 	z-index: 1000;
+	/* default: not interactive, but when visible we enable pointer events on wrapper */
 }
 .preview-popup-hidden {
 	opacity: 0;
-	transform: translateX(-18px) scale(0.88);
+	transform: translateX(-18px) scale(0.96);
+	pointer-events: none;
 }
 .preview-popup-visible {
 	opacity: 1;
 	transform: translateX(0) scale(1);
+	pointer-events: auto; /* allow pointer to enter preview when visible */
+}
+
+/* Enlarge preview image slightly on show to emphasize hover */
+.preview-popup .preview-img {
+	transition: transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 220ms;
+	transform-origin: center;
+}
+.preview-popup-visible .preview-img {
+	transform: scale(1.03);
+	box-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
 }
 
 /* Tech bubble vertical stack */
 .tech-stack {
-	pointer-events: none;
 	transform-origin: center;
 	will-change: transform, opacity;
 	display: flex;
@@ -148,17 +159,24 @@ body {
 	align-items: flex-end; /* keep pills snug to the link edge */
 	gap: 6px;
 	z-index: 1000;
+	pointer-events: auto; /* allow interaction when visible */
 }
 .tech-stack .techPill {
 	/* Start near the link center, slightly offset toward the link horizontally. */
-	transform: translateX(18px) translateY(0) scale(0.88);
+	transform: translateX(18px) translateY(0) scale(0.92);
 	opacity: 0;
-	/* Transitions removed so pills appear instantly when `.show` is toggled. */
+	transition: transform 180ms cubic-bezier(0.2, 0.9, 0.3, 1), opacity 160ms;
 }
 .tech-stack.show .techPill {
 	/* Move to final X (0) and to its final vertical offset set by --finalY */
 	transform: translateX(0) translateY(var(--finalY, 0)) scale(1);
 	opacity: 1;
+}
+
+/* Slight interactive hover for the pills when hovered individually */
+.tech-stack .techPill:hover {
+	transform: translateX(0) translateY(var(--finalY, 0)) scale(1.06);
+	box-shadow: 0 8px 20px rgba(2, 6, 23, 0.28);
 }
 
 /* Center pill class (optional override) */
