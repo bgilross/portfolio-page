@@ -48,10 +48,28 @@
 /* trigger shimmer, staggered via --d custom property */
 .projectCard:hover .techPill::before,
 .projectCard.forceHover .techPill::before {
-	/* Make shimmer stripe appear instantly on hover (no animation) */
+	/* Re-enable shimmer animation on the projects page */
 	opacity: 1;
+	animation: shimmer 0.85s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+	animation-delay: var(--d, 0s);
+}
+/* shimmer keyframes (projects page) */
+@keyframes shimmer {
+	from {
+		transform: translateX(-120%);
+	}
+	to {
+		transform: translateX(120%);
+	}
 }
 
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	.projectCard:hover .techPill::before,
+	.projectCard.forceHover .techPill::before {
+		animation: none;
+	}
+}
 /* stagger delays (adjust count as needed) */
 .projectCard .techPill:nth-child(1) {
 	--d: 0s;
