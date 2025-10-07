@@ -8,13 +8,23 @@
 	justify-content: center;
 	padding: 0.25rem 0.75rem;
 	border-radius: 9999px;
-	background: rgba(255, 255, 255, 0.03);
-	border: 1px solid rgba(255, 255, 255, 0.06);
-	transition: transform 0.18s ease, box-shadow 0.18s ease,
-		background-color 0.25s ease;
+	/* Make the base pill background match the hovered appearance */
+	background: linear-gradient(
+		90deg,
+		rgba(34, 197, 94, 0.06),
+		rgba(16, 185, 129, 0.04)
+	);
+	/* slightly darker/transparent border to match hover card look */
+	border: 1px solid rgba(2, 6, 23, 0.06);
+	/* transitions removed so pills appear instantly */
 	backdrop-filter: blur(2px);
+<<<<<<< HEAD
 	vertical-align: middle;
 	line-height: 1;
+=======
+	cursor: pointer;
+	user-select: none;
+>>>>>>> a5804303d56079f85678815b7102b799772089ea
 }
 
 /* inner shimmer stripe */
@@ -48,11 +58,12 @@
 /* trigger shimmer, staggered via --d custom property */
 .projectCard:hover .techPill::before,
 .projectCard.forceHover .techPill::before {
+	/* Re-enable shimmer animation on the projects page */
 	opacity: 1;
 	animation: shimmer 0.85s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
 	animation-delay: var(--d, 0s);
 }
-
+/* shimmer keyframes (projects page) */
 @keyframes shimmer {
 	from {
 		transform: translateX(-120%);
@@ -62,6 +73,13 @@
 	}
 }
 
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	.projectCard:hover .techPill::before,
+	.projectCard.forceHover .techPill::before {
+		animation: none;
+	}
+}
 /* stagger delays (adjust count as needed) */
 .projectCard .techPill:nth-child(1) {
 	--d: 0s;
@@ -86,4 +104,31 @@
 }
 .projectCard .techPill:nth-child(8) {
 	--d: 0.42s;
+}
+
+/* When tech pills are shown as a floating stack, allow the shimmer to run and add a small hover scale */
+.techPill::before {
+	/* ensure the shimmer stripe is usable when pointer-events are enabled */
+	will-change: transform, opacity;
+}
+
+/* Floating tech stack: when hovering the floating container, enlarge all pills and run shimmer sequentially */
+:global(.floating-tech):hover .techPill,
+:global(.floating-tech).show .techPill {
+	transform: translateX(0) scale(1.06) !important;
+	box-shadow: 0 10px 26px rgba(2, 6, 23, 0.32);
+}
+
+/* trigger shimmer when hovering the floating tech-stack container */
+:global(.floating-tech):hover .techPill::before,
+:global(.floating-tech).show .techPill::before {
+	opacity: 1;
+	animation: shimmer 0.85s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+	animation-delay: var(--d, 0s);
+}
+
+/* On the home page, make pillboxes use the same background as the dark link button */
+:global(.home-projects) .techPill {
+	background: #0f172a; /* same as .link-btn.dark-btn */
+	border-color: transparent;
 }

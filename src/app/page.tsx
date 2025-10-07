@@ -1,9 +1,37 @@
 "use client"
 
-import Image from "next/image"
+// using plain <img> for preview to avoid Next/Image quirks with space-containing paths
 import React, { useState, useEffect, useRef } from "react"
 import projectsData from "./projects/data"
 import projectStyles from "./projects/projects.module.css"
+
+// Home page project entries (kept at module scope so hooks depending on them are stable)
+const projects = [
+	{
+		key: "setlist",
+		label: "Setlist Creator",
+		url: "https://set-list-next.vercel.app/",
+		preview: "/preview img/setlister-preview.png",
+	},
+	{
+		key: "spanish",
+		label: "Spanish Learning",
+		url: "https://spanish-phi.vercel.app/",
+		preview: "/preview img/spanish-preview.png",
+	},
+	{
+		key: "rowdy",
+		label: "Rowdy Band Houston",
+		url: "https://rowdy-website.vercel.app/",
+		preview: "/preview img/rowdy-preview.png",
+	},
+	{
+		key: "nfl",
+		label: "NFL Box Score Redux",
+		url: "https://nfl-next-app-beige.vercel.app/",
+		preview: "/preview img/nfl-preview.png",
+	},
+]
 
 export default function Home() {
 	const personal = [
@@ -20,32 +48,7 @@ export default function Home() {
 		},
 	]
 
-	const projects = [
-		{
-			key: "setlist",
-			label: "Setlist Creator",
-			url: "https://set-list-next.vercel.app/",
-			preview: "/preview img/setlister-preview.png",
-		},
-		{
-			key: "spanish",
-			label: "Spanish Learning",
-			url: "https://spanish-phi.vercel.app/",
-			preview: "/preview img/spanish-preview.png",
-		},
-		{
-			key: "rowdy",
-			label: "Rowdy Band Houston",
-			url: "https://rowdy-website.vercel.app/",
-			preview: "/preview img/rowdy-preview.png",
-		},
-		{
-			key: "nfl",
-			label: "NFL Box Score Redux",
-			url: "https://nfl-next-app-beige.vercel.app/",
-			preview: "/preview img/nfl-preview.png",
-		},
-	]
+	// ...existing code...
 
 	const [previewSrc, setPreviewSrc] = useState<string | null>(null)
 	const [previewPos, setPreviewPos] = useState<{
@@ -59,7 +62,21 @@ export default function Home() {
 	)
 	const [showTech, setShowTech] = useState(false)
 	const [showPreview, setShowPreview] = useState(false)
+	// track whether pointer is over the preview or tech areas so we can persist hover
+	const overPreviewRef = useRef(false)
+	const overTechRef = useRef(false)
 	const hideTimeoutRef = useRef<number | null>(null)
+
+	// Preload preview images so the first hover isn't blank due to network latency
+	useEffect(() => {
+		if (!projects || projects.length === 0) return
+		for (const p of projects) {
+			if (p.preview) {
+				const img = new window.Image()
+				img.src = encodeURI(p.preview)
+			}
+		}
+	}, [])
 
 	useEffect(() => {
 		return () => {
@@ -174,8 +191,8 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4 transition-colors">
-			<div className="w-full max-w-md flex flex-col items-center gap-6 relative">
+		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4">
+			<div className="w-full max-w-md flex flex-col items-center gap-6 relative home-projects">
 				<header className="text-center px-2 pt-6">
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 drop-shadow-sm">
 						Ben Gilsenberg
@@ -222,7 +239,7 @@ export default function Home() {
 
 				{/* Projects with hover preview area (desktop). Links column keeps its width; preview is absolutely positioned to the right */}
 				<div className="w-full relative -mt-1">
-					<div className="w-full max-w-md flex flex-col gap-4">
+					<div className="w-full max-w-md flex flex-col gap-4 home-projects">
 						{projects.map((link) => (
 							<a
 								key={link.key}
@@ -271,16 +288,19 @@ export default function Home() {
 									})
 								}}
 								onMouseLeave={() => {
-									setShowPreview(false)
+									// start delayed hide to allow pointer to move into preview/tech areas
 									if (hideTimeoutRef.current != null)
 										window.clearTimeout(hideTimeoutRef.current)
 									hideTimeoutRef.current = window.setTimeout(() => {
-										setPreviewSrc(null)
-										setPreviewPos(null)
+										// only unmount if pointer isn't over the preview or tech areas
+										if (!overPreviewRef.current && !overTechRef.current) {
+											setPreviewSrc(null)
+											setPreviewPos(null)
+											setShowTech(false)
+											setPreviewTech(null)
+											setTechPos(null)
+										}
 										hideTimeoutRef.current = null
-										setShowTech(false)
-										setPreviewTech(null)
-										setTechPos(null)
 									}, 220)
 								}}
 								onFocus={(e) => {
@@ -321,16 +341,18 @@ export default function Home() {
 									})
 								}}
 								onBlur={() => {
-									setShowPreview(false)
+									// delayed hide on blur, same as mouseleave — let preview/tech keep it alive
 									if (hideTimeoutRef.current != null)
 										window.clearTimeout(hideTimeoutRef.current)
 									hideTimeoutRef.current = window.setTimeout(() => {
-										setPreviewSrc(null)
-										setPreviewPos(null)
+										if (!overPreviewRef.current && !overTechRef.current) {
+											setPreviewSrc(null)
+											setPreviewPos(null)
+											setShowTech(false)
+											setPreviewTech(null)
+											setTechPos(null)
+										}
 										hideTimeoutRef.current = null
-										setShowTech(false)
-										setPreviewTech(null)
-										setTechPos(null)
 									}, 220)
 								}}
 							>
@@ -349,78 +371,158 @@ export default function Home() {
 					{/* Popup-style preview that appears under the hovered link */}
 					{previewSrc && previewPos && (
 						<div
-							className="hidden md:block fixed z-50 pointer-events-none"
+							className="hidden md:block fixed z-50"
 							style={{
 								top: previewPos.top,
 								left: previewPos.left,
 								width: previewPos.width,
 								transform: "translateY(-50%)",
 							}}
+							onMouseEnter={() => {
+								overPreviewRef.current = true
+								// ensure visible while hovering preview
+								setShowPreview(true)
+								if (hideTimeoutRef.current != null) {
+									window.clearTimeout(hideTimeoutRef.current)
+									hideTimeoutRef.current = null
+								}
+							}}
+							onMouseLeave={() => {
+								overPreviewRef.current = false
+								// trigger same delayed hide as links
+								if (hideTimeoutRef.current != null) {
+									window.clearTimeout(hideTimeoutRef.current)
+								}
+								hideTimeoutRef.current = window.setTimeout(() => {
+									if (!overPreviewRef.current && !overTechRef.current) {
+										setPreviewSrc(null)
+										setPreviewPos(null)
+										setShowPreview(false)
+										setPreviewTech(null)
+										setTechPos(null)
+									}
+									hideTimeoutRef.current = null
+								}, 220)
+							}}
 						>
-							{/* Outer wrapper handles fade/scale transitions; pointer-events none so it doesn't steal hover */}
-							<div
-								className={`preview-popup ${
-									showPreview ? "preview-popup-visible" : "preview-popup-hidden"
-								} pointer-events-none`}
+							{/* Make the preview clickable: wrap in anchor that opens same project */}
+							<a
+								href={previewSrc ? previewSrc.replace("/preview img", "") : "#"}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="pointer-events-auto"
 							>
-								<div className="bg-white rounded-lg shadow-lg overflow-hidden">
-									<div className="w-full h-56 bg-slate-100">
-										<Image
-											src={previewSrc}
-											alt="project preview"
-											width={previewPos.width}
-											height={Math.round(previewPos.width * 0.6)}
-											className="object-cover w-full h-full"
-										/>
+								<div
+									className={`preview-popup ${
+										showPreview
+											? "preview-popup-visible"
+											: "preview-popup-hidden"
+									}`}
+								>
+									<div className="bg-white rounded-lg shadow-lg overflow-hidden">
+										<div className="w-full h-56 bg-slate-100 overflow-hidden">
+											<img
+												key={previewSrc ?? undefined}
+												src={previewSrc ? encodeURI(previewSrc) : ""}
+												alt="project preview"
+												width={previewPos.width}
+												height={Math.round(previewPos.width * 0.6)}
+												className="object-cover w-full h-full preview-img"
+												loading="eager"
+											/>
+										</div>
 									</div>
 								</div>
-							</div>
+							</a>
 						</div>
 					)}
 
 					{/* Vertical tech bubbles to the left of the hovered link */}
-					{previewTech && techPos && (
-						<div
-							className="hidden md:block fixed z-50 pointer-events-none"
-							style={{
-								top: techPos.top,
-								left: techPos.left,
-								transform: "translateX(-100%) translateY(-50%)",
-							}}
-						>
-							<div className={`tech-stack ${showTech ? "show" : ""} mr-3`}>
-								{(() => {
-									const count = previewTech.length
-									const center = Math.floor((count - 1) / 2)
-									// estimate pill height + gap (tailwind text-xs + padding) ~ 28px
-									const pillHeight = 28
-									return previewTech.map((t, i) => {
-										const offsetIndex = i - center
-										const finalY = offsetIndex * (pillHeight + 6)
-										const isCenter = i === center
-										const pillStyle = {
-											transformOrigin: "center",
-											transitionDelay: `${Math.abs(offsetIndex) * 40}ms`,
-										} as React.CSSProperties & Record<string, string>
-										pillStyle["--finalY"] = `${finalY}px`
-										return (
-											<span
-												key={t + i}
-												className={`${
-													projectStyles.techPill
-												} inline-block text-xs font-semibold text-white ${
-													isCenter ? "center" : ""
-												}`}
-												style={pillStyle}
-											>
-												{t}
-											</span>
-										)
-									})
-								})()}
-							</div>
-						</div>
-					)}
+					{previewTech &&
+						techPos &&
+						(() => {
+							const count = previewTech.length
+							const pillHeight = 22 // smaller pill height to tighten stack
+							const gap = 6
+							const totalHeight =
+								count * pillHeight + Math.max(0, count - 1) * gap
+							const wrapperTop = techPos.top - totalHeight / 2
+							return (
+								<div
+									className="hidden md:block fixed z-50"
+									style={{
+										top: wrapperTop,
+										left: techPos.left,
+										transform: "translateX(-100%)",
+									}}
+									onMouseEnter={() => {
+										overTechRef.current = true
+										setShowTech(true)
+										if (hideTimeoutRef.current != null) {
+											window.clearTimeout(hideTimeoutRef.current)
+											hideTimeoutRef.current = null
+										}
+									}}
+									onMouseLeave={() => {
+										overTechRef.current = false
+										if (hideTimeoutRef.current != null) {
+											window.clearTimeout(hideTimeoutRef.current)
+										}
+										hideTimeoutRef.current = window.setTimeout(() => {
+											if (!overPreviewRef.current && !overTechRef.current) {
+												setPreviewTech(null)
+												setTechPos(null)
+												setShowTech(false)
+												setPreviewSrc(null)
+												setPreviewPos(null)
+											}
+											hideTimeoutRef.current = null
+										}, 220)
+									}}
+								>
+									<div
+										className={`floating-tech tech-stack ${
+											showTech ? "show" : ""
+										} mr-3 pointer-events-auto`}
+										style={{ height: totalHeight }}
+									>
+										{previewTech.map((t, i) => {
+											const center = Math.floor((count - 1) / 2)
+											const offsetIndex = i - center
+											const finalY = offsetIndex * (pillHeight + gap)
+											const isCenter = i === center
+											const pillStyle = {
+												transformOrigin: "center",
+												transitionDelay: `${Math.abs(offsetIndex) * 40}ms`,
+											} as React.CSSProperties & Record<string, string>
+											pillStyle["--finalY"] = `${finalY}px`
+											// sequential shimmer top -> down: set --d based on DOM order (top is i=0)
+											pillStyle["--d"] = `${i * 0.06}s`
+											return (
+												<span
+													key={t + i}
+													className={`${
+														projectStyles.techPill
+													} inline-block text-xs font-semibold text-white ${
+														isCenter ? "center" : ""
+													}`}
+													style={pillStyle}
+													onClick={() => {
+														window.open(
+															projects.find((p) => p.preview === previewSrc)
+																?.url || "#",
+															"_blank"
+														)
+													}}
+												>
+													{t}
+												</span>
+											)
+										})}
+									</div>
+								</div>
+							)
+						})()}
 				</div>
 				<div className="w-full max-w-md px-2">
 					<a
