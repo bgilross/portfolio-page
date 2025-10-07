@@ -1,7 +1,8 @@
 "use client"
 
-// using plain <img> for preview to avoid Next/Image quirks with space-containing paths
+import Image from "next/image"
 import React, { useState, useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import projectsData from "./projects/data"
 import projectStyles from "./projects/projects.module.css"
 
@@ -66,6 +67,84 @@ export default function Home() {
 	const overPreviewRef = useRef(false)
 	const overTechRef = useRef(false)
 	const hideTimeoutRef = useRef<number | null>(null)
+	const [debugInfo, setDebugInfo] = useState<string | null>(null)
+
+	// Single-page scaler refs/state
+	const scalerRootRef = useRef<HTMLDivElement | null>(null)
+	const scalerContentRef = useRef<HTMLDivElement | null>(null)
+
+	// simple portal for overlays so they are mounted on document.body (avoid transformed ancestors)
+	function OverlayPortal({ children }: { children: React.ReactNode }) {
+		const elRef = useRef<HTMLDivElement | null>(null)
+		if (!elRef.current && typeof document !== "undefined") {
+			elRef.current = document.createElement("div")
+			elRef.current.setAttribute("data-overlay-portal", "true")
+		}
+
+		useEffect(() => {
+			const el = elRef.current
+			if (!el) return
+			document.body.appendChild(el)
+			return () => {
+				if (el.parentNode) el.parentNode.removeChild(el)
+			}
+		}, [])
+
+		if (!elRef.current) return null
+		return createPortal(children, elRef.current)
+	}
+
+	useEffect(() => {
+		let resizeTimer: number | null = null
+
+		function updateScale() {
+			const root = scalerRootRef.current
+			const content = scalerContentRef.current
+			if (!root || !content) return
+
+			// measure the content size (it has translate centering from CSS classes; that doesn't affect width/height)
+			const rect = content.getBoundingClientRect()
+			const vw = window.innerWidth
+			const vh = window.innerHeight
+			// compute scale so content fits within viewport without scrolling
+			const scale = Math.min(vw / rect.width, vh / rect.height, 1)
+			content.style.transformOrigin = "center center"
+			// keep the translate used for centering the element and apply the scale as well
+			content.style.transform = `translate(-50%,-50%) scale(${scale})`
+		}
+
+		updateScale()
+
+		const onResize = () => {
+			if (resizeTimer != null) window.clearTimeout(resizeTimer)
+			resizeTimer = window.setTimeout(() => {
+				updateScale()
+				resizeTimer = null
+			}, 80)
+		}
+
+		window.addEventListener("resize", onResize)
+		window.addEventListener("orientationchange", onResize)
+
+		let ro: ResizeObserver | null = null
+		if (typeof ResizeObserver !== "undefined" && scalerContentRef.current) {
+			ro = new ResizeObserver(() => updateScale())
+			ro.observe(scalerContentRef.current)
+		}
+
+		// Also update after fonts/images load
+		window.addEventListener("load", updateScale)
+
+		return () => {
+			window.removeEventListener("resize", onResize)
+			window.removeEventListener("orientationchange", onResize)
+			window.removeEventListener("load", updateScale)
+			if (ro) ro.disconnect()
+			if (resizeTimer != null) window.clearTimeout(resizeTimer)
+		}
+	}, [])
+
+	// (no scale inversion; use element bounding rect which is already in viewport coords)
 
 	// Preload preview images so the first hover isn't blank due to network latency
 	useEffect(() => {
@@ -191,8 +270,15 @@ export default function Home() {
 	}
 
 	return (
-		<main className="min-h-screen flex items-center justify-center app-bg text-slate-900 px-4">
-			<div className="w-full max-w-md flex flex-col items-center gap-6 relative home-projects">
+		<main
+			ref={scalerRootRef}
+			className="relative w-screen h-screen flex items-center justify-center app-bg text-slate-900 px-4 overflow-hidden"
+		>
+			<div
+				ref={scalerContentRef}
+				className="absolute top-1/2 left-1/2 w-full max-w-md flex flex-col items-center gap-6 home-projects"
+				style={{ transform: "translate(-50%,-50%)" }}
+			>
 				<header className="text-center px-2 pt-6">
 					<h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 drop-shadow-sm">
 						Ben Gilsenberg
@@ -256,12 +342,37 @@ export default function Home() {
 									const rect = (
 										e.currentTarget as HTMLElement
 									).getBoundingClientRect()
-									// Position the preview to the right of the hovered link and vertically center using translateY(-50%)
+									// DEBUG: log rect and scroll info to help diagnose overlay offsets
+									const dbg = {
+										top: rect.top,
+										left: rect.left,
+										right: rect.right,
+										width: rect.width,
+										height: rect.height,
+										scrollX: window.scrollX,
+										scrollY: window.scrollY,
+									}
+									console.log("hover rect", dbg)
+									try {
+										setDebugInfo(JSON.stringify(dbg, null, 0))
+									} catch {
+										setDebugInfo(String(dbg))
+									}
+									// Position preview using viewport coordinates
 									setPreviewPos({
-										top: rect.top + window.scrollY + rect.height / 2,
-										left: rect.right + window.scrollX + 12,
+										top: rect.top + rect.height / 2,
+										left: rect.right + 12,
 										width: rect.width,
 									})
+									const dbgPreview = {
+										top: rect.top + rect.height / 2,
+										left: rect.right + 12,
+										width: rect.width,
+									}
+									console.log("setPreviewPos", dbgPreview)
+									setDebugInfo(
+										(s) => `${s}\nPREVIEW:${JSON.stringify(dbgPreview)}`
+									)
 									setPreviewSrc(link.preview || null)
 									// mount hidden then flip visible on next frame so CSS transition can run
 									setShowPreview(false)
@@ -276,9 +387,15 @@ export default function Home() {
 											?.tech || null
 									)
 									setTechPos({
-										top: rect.top + rect.height / 2 + window.scrollY,
-										left: rect.left + window.scrollX - 8,
+										top: rect.top + rect.height / 2,
+										left: rect.left - 8,
 									})
+									const dbgTech = {
+										top: rect.top + rect.height / 2,
+										left: rect.left - 8,
+									}
+									console.log("setTechPos", dbgTech)
+									setDebugInfo((s) => `${s}\nTECH:${JSON.stringify(dbgTech)}`)
 									// mount hidden then flip visible on next frame so CSS transition can run
 									setShowTech(false)
 									requestAnimationFrame(() => {
@@ -311,10 +428,10 @@ export default function Home() {
 									const rect = (
 										e.currentTarget as HTMLElement
 									).getBoundingClientRect()
-									// center preview vertically using translateY on the container
+									// use rect viewport coords directly
 									setPreviewPos({
-										top: rect.top + window.scrollY + rect.height / 2,
-										left: rect.right + window.scrollX + 12,
+										top: rect.top + rect.height / 2,
+										left: rect.right + 12,
 										width: rect.width,
 									})
 									setPreviewSrc(link.preview || null)
@@ -330,8 +447,8 @@ export default function Home() {
 											?.tech || null
 									)
 									setTechPos({
-										top: rect.top + rect.height / 2 + window.scrollY,
-										left: rect.left + window.scrollX - 8,
+										top: rect.top + rect.height / 2,
+										left: rect.left - 8,
 									})
 									// mount hidden then flip visible on next frame so CSS transition can run
 									setShowTech(false)
@@ -368,76 +485,79 @@ export default function Home() {
 						))}
 					</div>
 
-					{/* Popup-style preview that appears under the hovered link */}
+					{/* overlays (fixed, siblings of the scaled content) */}
 					{previewSrc && previewPos && (
-						<div
-							className="hidden md:block fixed z-50"
-							style={{
-								top: previewPos.top,
-								left: previewPos.left,
-								width: previewPos.width,
-								transform: "translateY(-50%)",
-							}}
-							onMouseEnter={() => {
-								overPreviewRef.current = true
-								// ensure visible while hovering preview
-								setShowPreview(true)
-								if (hideTimeoutRef.current != null) {
-									window.clearTimeout(hideTimeoutRef.current)
-									hideTimeoutRef.current = null
-								}
-							}}
-							onMouseLeave={() => {
-								overPreviewRef.current = false
-								// trigger same delayed hide as links
-								if (hideTimeoutRef.current != null) {
-									window.clearTimeout(hideTimeoutRef.current)
-								}
-								hideTimeoutRef.current = window.setTimeout(() => {
-									if (!overPreviewRef.current && !overTechRef.current) {
-										setPreviewSrc(null)
-										setPreviewPos(null)
-										setShowPreview(false)
-										setPreviewTech(null)
-										setTechPos(null)
+						<OverlayPortal>
+							<div
+								className="hidden md:block fixed z-50"
+								style={{
+									top: previewPos.top,
+									left: previewPos.left,
+									width: previewPos.width,
+									transform: "translateY(-50%)",
+									outline: "2px solid rgba(255,0,0,0.6)",
+									boxShadow: "0 0 0 2px rgba(255,0,0,0.12)",
+								}}
+								onMouseEnter={() => {
+									overPreviewRef.current = true
+									setShowPreview(true)
+									if (hideTimeoutRef.current != null) {
+										window.clearTimeout(hideTimeoutRef.current)
+										hideTimeoutRef.current = null
 									}
-									hideTimeoutRef.current = null
-								}, 220)
-							}}
-						>
-							{/* Make the preview clickable: wrap in anchor that opens same project */}
-							<a
-								href={previewSrc ? previewSrc.replace("/preview img", "") : "#"}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="pointer-events-auto"
+								}}
+								onMouseLeave={() => {
+									overPreviewRef.current = false
+									if (hideTimeoutRef.current != null) {
+										window.clearTimeout(hideTimeoutRef.current)
+									}
+									hideTimeoutRef.current = window.setTimeout(() => {
+										if (!overPreviewRef.current && !overTechRef.current) {
+											setPreviewSrc(null)
+											setPreviewPos(null)
+											setShowPreview(false)
+											setPreviewTech(null)
+											setTechPos(null)
+										}
+										hideTimeoutRef.current = null
+									}, 220)
+								}}
 							>
-								<div
-									className={`preview-popup ${
-										showPreview
-											? "preview-popup-visible"
-											: "preview-popup-hidden"
-									}`}
+								<a
+									href={
+										previewSrc ? previewSrc.replace("/preview img", "") : "#"
+									}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="pointer-events-auto"
 								>
-									<div className="bg-white rounded-lg shadow-lg overflow-hidden">
-										<div className="w-full h-56 bg-slate-100 overflow-hidden">
-											<img
-												key={previewSrc ?? undefined}
-												src={previewSrc ? encodeURI(previewSrc) : ""}
-												alt="project preview"
-												width={previewPos.width}
-												height={Math.round(previewPos.width * 0.6)}
-												className="object-cover w-full h-full preview-img"
-												loading="eager"
-											/>
+									<div
+										className={`preview-popup ${
+											showPreview
+												? "preview-popup-visible"
+												: "preview-popup-hidden"
+										} `}
+									>
+										<div className="bg-white rounded-lg shadow-lg overflow-hidden">
+											<div className="w-full h-56 bg-slate-100 overflow-hidden">
+												{previewSrc ? (
+													<Image
+														key={previewSrc}
+														src={encodeURI(previewSrc)}
+														alt="project preview"
+														width={previewPos.width}
+														height={Math.round(previewPos.width * 0.6)}
+														className="object-cover w-full h-full preview-img"
+														priority
+													/>
+												) : null}
+											</div>
 										</div>
 									</div>
-								</div>
-							</a>
-						</div>
+								</a>
+							</div>
+						</OverlayPortal>
 					)}
-
-					{/* Vertical tech bubbles to the left of the hovered link */}
 					{previewTech &&
 						techPos &&
 						(() => {
@@ -448,79 +568,82 @@ export default function Home() {
 								count * pillHeight + Math.max(0, count - 1) * gap
 							const wrapperTop = techPos.top - totalHeight / 2
 							return (
-								<div
-									className="hidden md:block fixed z-50"
-									style={{
-										top: wrapperTop,
-										left: techPos.left,
-										transform: "translateX(-100%)",
-									}}
-									onMouseEnter={() => {
-										overTechRef.current = true
-										setShowTech(true)
-										if (hideTimeoutRef.current != null) {
-											window.clearTimeout(hideTimeoutRef.current)
-											hideTimeoutRef.current = null
-										}
-									}}
-									onMouseLeave={() => {
-										overTechRef.current = false
-										if (hideTimeoutRef.current != null) {
-											window.clearTimeout(hideTimeoutRef.current)
-										}
-										hideTimeoutRef.current = window.setTimeout(() => {
-											if (!overPreviewRef.current && !overTechRef.current) {
-												setPreviewTech(null)
-												setTechPos(null)
-												setShowTech(false)
-												setPreviewSrc(null)
-												setPreviewPos(null)
-											}
-											hideTimeoutRef.current = null
-										}, 220)
-									}}
-								>
+								<OverlayPortal>
 									<div
-										className={`floating-tech tech-stack ${
-											showTech ? "show" : ""
-										} mr-3 pointer-events-auto`}
-										style={{ height: totalHeight }}
+										className="hidden md:block fixed z-50"
+										style={{
+											top: wrapperTop,
+											left: techPos.left,
+											transform: "translateX(-100%)",
+											outline: "2px solid rgba(0,255,0,0.6)",
+										}}
+										onMouseEnter={() => {
+											overTechRef.current = true
+											setShowTech(true)
+											if (hideTimeoutRef.current != null) {
+												window.clearTimeout(hideTimeoutRef.current)
+												hideTimeoutRef.current = null
+											}
+										}}
+										onMouseLeave={() => {
+											overTechRef.current = false
+											if (hideTimeoutRef.current != null) {
+												window.clearTimeout(hideTimeoutRef.current)
+											}
+											hideTimeoutRef.current = window.setTimeout(() => {
+												if (!overPreviewRef.current && !overTechRef.current) {
+													setPreviewTech(null)
+													setTechPos(null)
+													setShowTech(false)
+													setPreviewSrc(null)
+													setPreviewPos(null)
+												}
+												hideTimeoutRef.current = null
+											}, 220)
+										}}
 									>
-										{previewTech.map((t, i) => {
-											const center = Math.floor((count - 1) / 2)
-											const offsetIndex = i - center
-											const finalY = offsetIndex * (pillHeight + gap)
-											const isCenter = i === center
-											const pillStyle = {
-												transformOrigin: "center",
-												transitionDelay: `${Math.abs(offsetIndex) * 40}ms`,
-											} as React.CSSProperties & Record<string, string>
-											pillStyle["--finalY"] = `${finalY}px`
-											// sequential shimmer top -> down: set --d based on DOM order (top is i=0)
-											pillStyle["--d"] = `${i * 0.06}s`
-											return (
-												<span
-													key={t + i}
-													className={`${
-														projectStyles.techPill
-													} inline-block text-xs font-semibold text-white ${
-														isCenter ? "center" : ""
-													}`}
-													style={pillStyle}
-													onClick={() => {
-														window.open(
-															projects.find((p) => p.preview === previewSrc)
-																?.url || "#",
-															"_blank"
-														)
-													}}
-												>
-													{t}
-												</span>
-											)
-										})}
+										<div
+											className={`floating-tech tech-stack ${
+												showTech ? "show" : ""
+											} mr-3 pointer-events-auto`}
+											style={{ height: totalHeight }}
+										>
+											{previewTech.map((t, i) => {
+												const center = Math.floor((count - 1) / 2)
+												const offsetIndex = i - center
+												const finalY = offsetIndex * (pillHeight + gap)
+												const isCenter = i === center
+												const pillStyle = {
+													transformOrigin: "center",
+													transitionDelay: `${Math.abs(offsetIndex) * 40}ms`,
+												} as React.CSSProperties & Record<string, string>
+												pillStyle["--finalY"] = `${finalY}px`
+												// sequential shimmer top -> down: set --d based on DOM order (top is i=0)
+												pillStyle["--d"] = `${i * 0.06}s`
+												return (
+													<span
+														key={t + i}
+														className={`${
+															projectStyles.techPill
+														} inline-block text-xs font-semibold text-white ${
+															isCenter ? "center" : ""
+														}`}
+														style={pillStyle}
+														onClick={() => {
+															window.open(
+																projects.find((p) => p.preview === previewSrc)
+																	?.url || "#",
+																"_blank"
+															)
+														}}
+													>
+														{t}
+													</span>
+												)
+											})}
+										</div>
 									</div>
-								</div>
+								</OverlayPortal>
 							)
 						})()}
 				</div>
@@ -546,6 +669,12 @@ export default function Home() {
 				<footer className="text-center text-xs text-slate-500 pt-2">
 					<span>More projects and updates coming soon.</span>
 				</footer>
+				{/* Debug panel (visible during development) */}
+				{debugInfo && (
+					<div className="fixed bottom-4 left-4 hidden md:block bg-white/90 text-xs text-slate-900 p-2 rounded border shadow max-w-xs z-60">
+						<pre className="whitespace-pre-wrap break-words">{debugInfo}</pre>
+					</div>
+				)}
 			</div>
 		</main>
 	)

@@ -18,13 +18,10 @@
 	border: 1px solid rgba(2, 6, 23, 0.06);
 	/* transitions removed so pills appear instantly */
 	backdrop-filter: blur(2px);
-<<<<<<< HEAD
 	vertical-align: middle;
 	line-height: 1;
-=======
 	cursor: pointer;
 	user-select: none;
->>>>>>> a5804303d56079f85678815b7102b799772089ea
 }
 
 /* inner shimmer stripe */
@@ -130,5 +127,12 @@
 /* On the home page, make pillboxes use the same background as the dark link button */
 :global(.home-projects) .techPill {
 	background: #0f172a; /* same as .link-btn.dark-btn */
+	border-color: transparent;
+}
+
+/* When overlays are rendered into a portal (appended to document.body) they no longer
+   live under .home-projects; keep the same dark pill appearance when mounted to the portal */
+[data-overlay-portal] .techPill {
+	background: #0f172a;
 	border-color: transparent;
 }
