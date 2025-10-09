@@ -67,7 +67,6 @@ export default function Home() {
 	const overPreviewRef = useRef(false)
 	const overTechRef = useRef(false)
 	const hideTimeoutRef = useRef<number | null>(null)
-	const [debugInfo, setDebugInfo] = useState<string | null>(null)
 
 	// Single-page scaler refs/state
 	const scalerRootRef = useRef<HTMLDivElement | null>(null)
@@ -342,37 +341,13 @@ export default function Home() {
 									const rect = (
 										e.currentTarget as HTMLElement
 									).getBoundingClientRect()
-									// DEBUG: log rect and scroll info to help diagnose overlay offsets
-									const dbg = {
-										top: rect.top,
-										left: rect.left,
-										right: rect.right,
-										width: rect.width,
-										height: rect.height,
-										scrollX: window.scrollX,
-										scrollY: window.scrollY,
-									}
-									console.log("hover rect", dbg)
-									try {
-										setDebugInfo(JSON.stringify(dbg, null, 0))
-									} catch {
-										setDebugInfo(String(dbg))
-									}
 									// Position preview using viewport coordinates
 									setPreviewPos({
 										top: rect.top + rect.height / 2,
 										left: rect.right + 12,
 										width: rect.width,
 									})
-									const dbgPreview = {
-										top: rect.top + rect.height / 2,
-										left: rect.right + 12,
-										width: rect.width,
-									}
-									console.log("setPreviewPos", dbgPreview)
-									setDebugInfo(
-										(s) => `${s}\nPREVIEW:${JSON.stringify(dbgPreview)}`
-									)
+
 									setPreviewSrc(link.preview || null)
 									// mount hidden then flip visible on next frame so CSS transition can run
 									setShowPreview(false)
@@ -390,12 +365,7 @@ export default function Home() {
 										top: rect.top + rect.height / 2,
 										left: rect.left - 8,
 									})
-									const dbgTech = {
-										top: rect.top + rect.height / 2,
-										left: rect.left - 8,
-									}
-									console.log("setTechPos", dbgTech)
-									setDebugInfo((s) => `${s}\nTECH:${JSON.stringify(dbgTech)}`)
+
 									// mount hidden then flip visible on next frame so CSS transition can run
 									setShowTech(false)
 									requestAnimationFrame(() => {
@@ -669,12 +639,6 @@ export default function Home() {
 				<footer className="text-center text-xs text-slate-500 pt-2">
 					<span>More projects and updates coming soon.</span>
 				</footer>
-				{/* Debug panel (visible during development) */}
-				{debugInfo && (
-					<div className="fixed bottom-4 left-4 hidden md:block bg-white/90 text-xs text-slate-900 p-2 rounded border shadow max-w-xs z-60">
-						<pre className="whitespace-pre-wrap break-words">{debugInfo}</pre>
-					</div>
-				)}
 			</div>
 		</main>
 	)
