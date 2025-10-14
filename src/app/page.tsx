@@ -77,7 +77,7 @@ export default function Home() {
 		const elRef = useRef<HTMLDivElement | null>(null)
 		if (!elRef.current && typeof document !== "undefined") {
 			elRef.current = document.createElement("div")
-			elRef.current.setAttribute("data-overlay-portal", "true")
+			elRef.current.classList.add("overlay-portal")
 		}
 
 		useEffect(() => {
@@ -465,8 +465,6 @@ export default function Home() {
 									left: previewPos.left,
 									width: previewPos.width,
 									transform: "translateY(-50%)",
-									outline: "2px solid rgba(255,0,0,0.6)",
-									boxShadow: "0 0 0 2px rgba(255,0,0,0.12)",
 								}}
 								onMouseEnter={() => {
 									overPreviewRef.current = true
@@ -545,7 +543,6 @@ export default function Home() {
 											top: wrapperTop,
 											left: techPos.left,
 											transform: "translateX(-100%)",
-											outline: "2px solid rgba(0,255,0,0.6)",
 										}}
 										onMouseEnter={() => {
 											overTechRef.current = true

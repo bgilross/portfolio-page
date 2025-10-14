@@ -136,3 +136,9 @@
 	background: #0f172a;
 	border-color: transparent;
 }
+
+/* legacy: also support overlay-portal class */
+.overlay-portal .techPill {
+	background: #0f172a;
+	border-color: transparent;
+}
